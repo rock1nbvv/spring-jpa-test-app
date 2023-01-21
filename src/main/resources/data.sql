@@ -1,0 +1,1 @@
+insert into users values(1, 'Vlad', '123456','vlad@email.com');
