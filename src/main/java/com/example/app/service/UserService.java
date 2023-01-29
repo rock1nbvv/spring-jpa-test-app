@@ -4,6 +4,7 @@ import com.example.app.entity.User;
 import com.example.app.entity.request.UserCreateDto;
 import com.example.app.entity.request.UserDto;
 import com.example.app.entity.request.UserUpdateDto;
+import com.example.app.exception.NotFoundException;
 import com.example.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,15 +32,7 @@ public class UserService {
     }
 
     public List<UserDto> getAll() {
-        List<User> userList = userRepository.findAll();
-        List<UserDto> userDtoList = new ArrayList<>();
-        for (User user : userList) {
-            userDtoList.add(UserDto.builder()
-                    .id(user.getId())
-                    .name(user.getName())
-                    .email(user.getEmail())
-                    .build());
-        }
+        List<UserDto> userDtoList = userRepository.findUserBy();
         return userDtoList;
     }
 
@@ -47,8 +40,12 @@ public class UserService {
         return Optional.ofNullable(userRepository.getViewById(id).orElse(null));
     }
 
-    public void update(Long id, UserUpdateDto userUpdateDto) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("user not found - " + id));
+    public void update(Long userId, UserUpdateDto userUpdateDto) {
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new NotFoundException("Entity " + User.class + " not found by id - " + userId,
+                        User.class,
+                        userId));
 
         if (Objects.nonNull(userUpdateDto.getName()) && !"".equalsIgnoreCase(userUpdateDto.getName())) {
             user.setName(userUpdateDto.getName());
@@ -63,7 +60,13 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void deleteById(Long id) {
-        userRepository.deleteById(id);
+    public void deleteById(Long userId) {
+        userRepository.getEntityById(userId)
+                .ifPresentOrElse(
+                        user -> userRepository.delete(user),
+                        () -> {
+                            throw new NotFoundException("Entity " + User.class + " not found by id - " + userId, User.class, userId);
+                        }
+                );
     }
 }

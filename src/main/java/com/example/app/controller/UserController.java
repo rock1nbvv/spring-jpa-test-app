@@ -38,7 +38,9 @@ public class UserController {
     public ResponseWrapper<UserDto> getUserById(final @PathVariable Long userId) {
         Optional<UserDto> user = userService.getOneById(userId);
         if (user.isEmpty()) {
-            throw new NotFoundException("Entity " + User.class + " not found by id - " + userId, User.class, userId);
+            throw new NotFoundException("Entity " + User.class + " not found by id - " + userId,
+                    User.class,
+                    userId);
         } else return new ResponseWrapper(user);
     }
 
@@ -53,15 +55,12 @@ public class UserController {
     }
 
     @PostMapping("/{userId}")
-    public void updateUserById(final @PathVariable Long userId, final @RequestBody UserUpdateDto userUpdateDto) throws Exception {
+    public void updateUserById(final @PathVariable Long userId, final @RequestBody UserUpdateDto userUpdateDto) {
         userService.update(userId, userUpdateDto);
     }
 
     @DeleteMapping("/{userId}")
     public void deleteUser(final @PathVariable Long userId) throws Exception {
-        Optional<UserDto> user = userService.getOneById(userId);
-        if (user.isEmpty()) {
-            throw new NotFoundException("Entity " + User.class + " not found by id - " + userId, User.class, userId);
-        } else userService.deleteById(userId);
+         userService.deleteById(userId);
     }
 }
